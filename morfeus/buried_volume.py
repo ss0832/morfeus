@@ -134,11 +134,17 @@ class BuriedVolume:
         density: float = 0.001,
         z_axis_atoms: Sequence[int] | None = None,
         xz_plane_atoms: Sequence[int] | None = None,
+        partial_scaling_atoms: Sequence[int] | None = None,
+        partial_scale: float = 1.0
     ) -> None:
         # Get center and and reortient coordinate system
         coordinates: Array2DFloat = np.array(coordinates)
         center = coordinates[metal_index - 1]
         coordinates -= center
+
+        if partial_scaling_atoms is None:
+            partial_scaling_atoms = []
+        partial_scaling_atoms = set(partial_scaling_atoms)
 
         if excluded_atoms is None:
             excluded_atoms = []
@@ -193,8 +199,14 @@ class BuriedVolume:
         ):
             if i in excluded_atoms:
                 continue
+
             elif (not include_hs) and element == 1:
                 continue
+            
+            elif i in partial_scaling_atoms:
+                atom = Atom(element, coord, radius_ * partial_scale, i)
+                atoms.append(atom)            
+            
             else:
                 atom = Atom(element, coord, radius_, i)
                 atoms.append(atom)
